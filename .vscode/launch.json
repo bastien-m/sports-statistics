@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug sport-data",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/data",
+      "args": ["league-season", "--league", "Top 14", "--season", "2024"]
+    }
+  ]
+}
