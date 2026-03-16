@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   CircleDot,
   Shield,
@@ -51,10 +52,10 @@ export function AppSidebar() {
               {sportsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton tooltip={item.title}>
-                    <a href={item.url} className="flex items-center gap-2 w-full">
+                    <Link href={item.url} className="flex items-center gap-2 w-full">
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -69,10 +70,10 @@ export function AppSidebar() {
               {comparisonItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton tooltip={item.title}>
-                    <a href={item.url} className="flex items-center gap-2 w-full">
+                    <Link href={item.url} className="flex items-center gap-2 w-full">
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

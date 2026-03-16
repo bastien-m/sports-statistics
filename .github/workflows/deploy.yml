@@ -1,0 +1,103 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Go ingest ──────────────────────────────────────────────────────────
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: data/go.mod
+          cache-dependency-path: data/go.sum
+
+      - name: Write data/.env for ingest
+        run: |
+          cat > data/.env <<'EOF'
+          MONGODB_HOST=localhost:27017
+          MONGODB_USER=${{ secrets.MONGO_USERNAME }}
+          MONGODB_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+          APIKEY_HEADER=x-apisports-key
+          APIKEY=placeholder
+          EOF
+
+      - name: Ingest data into MongoDB
+        working-directory: data
+        run: |
+          go run main.go ingest --sport football   --from 2018 --to 2024
+          go run main.go ingest --sport rugby      --from 2018 --to 2024
+          go run main.go ingest --sport handball   --from 2018 --to 2024
+          go run main.go ingest --sport basketball --from 2018 --to 2024
+
+      # ── Next.js build ──────────────────────────────────────────────────────
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: website
+        run: pnpm install
+
+      - name: Build
+        working-directory: website
+        env:
+          MONGODB_URI: mongodb://${{ secrets.MONGO_USERNAME }}:${{ secrets.MONGO_PASSWORD }}@localhost:27017
+          MONGODB_DB: sport-data
+          # Set BASE_PATH in repo Settings → Variables → Actions
+          # e.g. /sport-data  (leave empty for a user/org root site)
+          BASE_PATH: ${{ vars.BASE_PATH }}
+        run: pnpm build
+
+      # ── Deploy ─────────────────────────────────────────────────────────────
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
