@@ -36,10 +36,10 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # ── Go ingest ──────────────────────────────────────────────────────────
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: data/go.mod
           cache-dependency-path: data/go.sum
@@ -67,7 +67,7 @@ jobs:
         with:
           version: latest
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: pnpm
