@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sport-data/basketball"
+	"sport-data/common"
 	"sport-data/football"
 	"sport-data/handball"
 	"sport-data/rugby"
@@ -62,6 +63,7 @@ var scrapers = map[string]Scraper{
 var leaguesCmd = flag.NewFlagSet("leagues", flag.ExitOnError)
 var leagueSeasonCmd = flag.NewFlagSet("league-season", flag.ExitOnError)
 var leagueRangeCmd = flag.NewFlagSet("league-range", flag.ExitOnError)
+var ingestCmd = flag.NewFlagSet("ingest", flag.ExitOnError)
 
 func main() {
 	godotenv.Load()
@@ -71,6 +73,7 @@ func main() {
 		fmt.Println("  leagues        Fetch all leagues for a sport")
 		fmt.Println("  league-season  Fetch scores for a league and season")
 		fmt.Println("  league-range   Fetch scores for a league between two seasons")
+		fmt.Println("  ingest         Ingest all leagues of a sport into MongoDB for a season range")
 		os.Exit(1)
 	}
 
@@ -162,6 +165,53 @@ func main() {
 			if err := scraper.GetLeagueSeasonScore(leagueId, season); err != nil {
 				fmt.Fprintf(os.Stderr, "Error for season %d: %v\n", season, err)
 				os.Exit(1)
+			}
+		}
+
+	case "ingest":
+		sport := ingestCmd.String("sport", "", "Sport: football, basketball, handball, rugby (required)")
+		from := ingestCmd.Int("from", 0, "Start season year (required)")
+		to := ingestCmd.Int("to", 0, "End season year (required)")
+		ingestCmd.Parse(os.Args[2:])
+
+		if *sport == "" || *from == 0 || *to == 0 {
+			fmt.Fprintln(os.Stderr, "Error: --sport, --from and --to are required")
+			ingestCmd.Usage()
+			os.Exit(1)
+		}
+
+		if _, ok := scrapers[*sport]; !ok {
+			fmt.Fprintf(os.Stderr, "Error: unknown sport %q, must be one of: football, basketball, handball, rugby\n", *sport)
+			os.Exit(1)
+		}
+
+		if *from > *to {
+			fmt.Fprintln(os.Stderr, "Error: --from must be less than or equal to --to")
+			os.Exit(1)
+		}
+
+		entries, err := os.ReadDir(*sport)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error:", err)
+			os.Exit(1)
+		}
+
+		ingestFn := common.IngestSeason
+		if *sport == "football" {
+			ingestFn = football.IngestSeason
+		}
+
+		for _, e := range entries {
+			if !e.IsDir() {
+				continue
+			}
+			league := e.Name()
+			for season := *from; season <= *to; season++ {
+				fmt.Printf("Ingesting %s / %s / %d...\n", *sport, league, season)
+				if err := ingestFn(league, season); err != nil {
+					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+					os.Exit(1)
+				}
 			}
 		}
 

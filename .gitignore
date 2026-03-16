@@ -1,10 +1,10 @@
 data/basketball/*
-!data/basketball/scraper.go
+!data/basketball/*.go
 data/football/*
-!data/football/scraper.go
+!data/football/*.go
 data/handball/*
-!data/handball/scraper.go
+!data/handball/*.go
 data/rugby/*
-!data/rugby/scraper.go
+!data/rugby/*.go
 
 .env
