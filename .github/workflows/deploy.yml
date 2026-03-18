@@ -54,13 +54,27 @@ jobs:
           APIKEY=${{ secrets.APISPORTS_KEY }}
           EOF
 
+      - name: Fetch leagues
+        working-directory: data
+        run: |
+          go run main.go leagues --sport football
+          go run main.go leagues --sport rugby
+          go run main.go leagues --sport handball
+
+      - name: Fetch league data
+        working-directory: data
+        run: |
+          go run main.go league-range --sport football --league "Ligue 1"           --country France  --from 2018 --to 2024
+          go run main.go league-range --sport rugby    --league "Top 14"            --country France  --from 2018 --to 2024
+          go run main.go league-range --sport rugby    --league "Premiership Rugby" --country England --from 2018 --to 2024
+          go run main.go league-range --sport handball --league "Starligue"         --country France  --from 2018 --to 2024
+
       - name: Ingest data into MongoDB
         working-directory: data
         run: |
-          go run main.go ingest --sport football   --from 2018 --to 2024
-          go run main.go ingest --sport rugby      --from 2018 --to 2024
-          go run main.go ingest --sport handball   --from 2018 --to 2024
-          go run main.go ingest --sport basketball --from 2018 --to 2024
+          go run main.go ingest --sport football --from 2018 --to 2024
+          go run main.go ingest --sport rugby    --from 2018 --to 2024
+          go run main.go ingest --sport handball --from 2018 --to 2024
 
       # ── Next.js build ──────────────────────────────────────────────────────
       - uses: pnpm/action-setup@v4
