@@ -51,7 +51,7 @@ jobs:
           MONGODB_USER=${{ secrets.MONGO_USERNAME }}
           MONGODB_PASSWORD=${{ secrets.MONGO_PASSWORD }}
           APIKEY_HEADER=x-apisports-key
-          APIKEY=placeholder
+          APIKEY=${{ secrets.APISPORTS_KEY }}
           EOF
 
       - name: Ingest data into MongoDB

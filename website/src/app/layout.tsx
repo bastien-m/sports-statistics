@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sport Data",
   description: "Sport Data Dashboard",
+  icons: { icon: "/icon.png" },
 };
 
 export default function RootLayout({
