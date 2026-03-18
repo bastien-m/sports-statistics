@@ -1,13 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  CircleDot,
-  Shield,
-  Hand,
-  Trophy,
-  BarChart3,
-  ArrowLeftRight,
-} from "lucide-react";
+import { BarChart3, ArrowLeftRight, Icon, HandFist } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,12 +12,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { basketball, rugby, soccerBall } from "@lucide/lab";
 
 const sportsItems = [
-  { title: "Football", url: "/football", icon: CircleDot },
-  { title: "Rugby", url: "/rugby", icon: Shield },
-  { title: "Handball", url: "/handball", icon: Hand },
-  { title: "Basketball", url: "/basketball", icon: Trophy },
+  { title: "Football", url: "/football", icon: <Icon iconNode={soccerBall} /> },
+  { title: "Rugby", url: "/rugby", icon: <Icon iconNode={rugby} /> },
+  { title: "Handball", url: "/handball", icon: <HandFist /> },
+  {
+    title: "Basketball",
+    url: "/basketball",
+    icon: <Icon iconNode={basketball} />,
+  },
 ];
 
 const comparisonItems = [
@@ -40,7 +38,13 @@ export function AppSidebar() {
     >
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1">
-          <Image src="/icon.png" alt="Logo" width={24} height={24} className="shrink-0" />
+          <Image
+            src="/icon.png"
+            alt="Logo"
+            width={24}
+            height={24}
+            className="shrink-0"
+          />
           <span className="font-semibold text-sm truncate">Sport Data</span>
         </div>
       </SidebarHeader>
@@ -52,8 +56,11 @@ export function AppSidebar() {
               {sportsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton tooltip={item.title}>
-                    <Link href={item.url} className="flex items-center gap-2 w-full">
-                      <item.icon />
+                    <Link
+                      href={item.url}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      {item.icon}
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -70,7 +77,10 @@ export function AppSidebar() {
               {comparisonItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton tooltip={item.title}>
-                    <Link href={item.url} className="flex items-center gap-2 w-full">
+                    <Link
+                      href={item.url}
+                      className="flex items-center gap-2 w-full"
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
